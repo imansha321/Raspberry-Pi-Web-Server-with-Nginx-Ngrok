@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Raspberry Pi Web Server Project</title>
+  <link rel="stylesheet" href="steps.css" />
+</head>
+<body>
+
+<header>
+  <h1>Raspberry Pi Web Server with Nginx & Ngrok</h1>
+  <p>Host your static website from a Raspberry Pi and access it from anywhere!</p>
+</header>
+
+<main>
+  <h2>What You'll Need</h2>
+  <ul>
+    <li>Raspberry Pi with Raspberry Pi OS</li>
+    <li>Internet connection</li>
+    <li>Website files (HTML/CSS/JS)</li>
+    <li>Ngrok account (free)</li>
+  </ul>
+
+  <h2>Setup Instructions</h2>
+  <ol>
+
+
+    <li><strong>Install Node.js:</strong><br/>
+        <pre><code>sudo apt install nodejs npm
+        </code></pre>
+    </li>
+
+    <li><strong>Install Node express:</strong><br/>
+        <pre><code>npm init -y npm install express</code></pre>
+    </li>
+
+    <li><strong> Open new folder  in vscode </strong></li>
+
+    <li><strong> In vscode terminal run:</strong><br/>
+        <pre><code>npm init -y</code></pre>
+    </li>
+
+    <li><strong> Create server.js</strong><br/>
+        <pre><code>const express = require('express');
+            const path = require('path');
+            
+            const app = express();
+            const PORT = 5000;
+            
+            // Serve static files from the public directory
+            app.use(express.static(path.join(__dirname, 'public')));
+            
+            app.listen(PORT, () => {
+              console.log(`Server running at http://localhost:${PORT}`);
+            });
+            </code></pre>
+    </li>
+
+    <li><strong>Create public folder in above folder and add your index.html file</strong></li>
+
+    <li><strong> In vscode terminal run:</strong><br/>
+        <pre><code>npm start</code></pre>
+    </li>
+    
+
+    <li><strong>Install Nginx:</strong><br/>
+        <pre><code>sudo apt update && sudo apt install nginx</code></pre>
+      </li>
+  
+      <li><strong>go /etc/nginx/sites-available/default  and  modify default file as : </strong></br>
+          <pre><code>server {
+              listen 80 default_server;
+              listen [::]:80 default_server;
+          
+              server_name _;
+          
+              # This doesn't matter when using proxy_pass  keep it or change it
+              root /var/www/html;
+              index index.html;
+          
+              location / {
+                  proxy_pass http://localhost:5000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host $host;
+                  proxy_cache_bypass $http_upgrade;
+              }
+          }
+          </code></pre>
+      </li>
+
+    <li><strong>View your Ip address using:</strong><br/>
+        <pre><code>hostname -I</code></pre></li>
+
+    <li><strong>start nginx:</strong><br/>
+        <pre><code>sudo /etc/init.d/nginx start
+        </code></pre></li>
+
+    <li><strong>Install Ngrok:</strong><br/>
+      <pre><code>wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-arm.zip
+unzip ngrok-stable-linux-arm.zip
+chmod +x ngrok
+sudo mv ngrok /usr/local/bin</code></pre>
+    </li>
+
+    <li><strong>Authenticate Ngrok:</strong><br/>
+      <pre><code>ngrok config add-authtoken YOUR_AUTHTOKEN</code></pre>
+    </li>
+
+    <li><strong>Start Ngrok:</strong><br/>
+      <pre><code>ngrok http your_ip_address:80
+    </code></pre>
+    </li>
+  </ol>
+
+  <h2>Accessing Your Site</h2>
+  <p>After running <code>ngrok http your_ip_address:80</code>, you will get a public URL like:</p>
+  <pre><code>https://bb11-2407-c00-6000-b85a-b7cc-9270-1d01-9eca.ngrok-free.app</code></pre>
+  <p>You can share this URL to access your Raspberry Pi-hosted site from anywhere!</p>
+
+  <h2>Tips</h2>
+  <ul>
+    <li>Make sure your Pi stays connected to the internet.</li>
+    <li>Use <code>sudo systemctl enable nginx</code> to start Nginx on boot.</li>
+    <li>Consider writing a script to auto-start Ngrok at boot.</li>
+  </ul>
+</main>
+
+<footer>
+  <p><a href="https://github.com/imansha321">GitHub</a></p>
+</footer>
+
+</body>
+</html>
